@@ -1,1 +1,311 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="CarboAR" />
+  <title>CarboAR</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+      overflow: hidden;
+      height: 100dvh;
+      width: 100vw;
+      user-select: none;
+    }
+    #camera {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+    .top-bar {
+      position: fixed;
+      top: max(16px, env(safe-area-inset-top));
+      left: 16px;
+      right: 16px;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .pill-btn {
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .pill-btn.active {
+      background: rgba(52, 199, 89, 0.85);
+      border-color: #34c759;
+    }
+    .ar-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      padding: 24px;
+      text-align: center;
+    }
+    .reticle {
+      width: 240px;
+      height: 240px;
+      border: 2px dashed rgba(255, 255, 255, 0.45);
+      border-radius: 32px;
+      position: absolute;
+      transition: opacity 0.3s;
+    }
+    .carb-number {
+      font-size: 112px;
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -3px;
+      color: #fff;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.9);
+      transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+    }
+    .carb-unit {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-top: 6px;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.9);
+    }
+    .food-label {
+      margin-top: 14px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 17px;
+      font-weight: 600;
+      max-width: 85vw;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .bottom-controls {
+      position: fixed;
+      bottom: max(24px, env(safe-area-inset-bottom));
+      left: 16px;
+      right: 16px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .portions {
+      display: flex;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .portion-btn {
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.75);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .portion-btn.selected {
+      background: #fff;
+      color: #000;
+    }
+    .shutter-btn {
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.25);
+      border: 4px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.12s;
+    }
+    .shutter-btn:active { transform: scale(0.92); }
+    .shutter-inner {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #fff;
+    }
+    .shutter-btn.loading .shutter-inner {
+      background: #ffd60a;
+      animation: pulse 0.8s infinite alternate;
+    }
+    @keyframes pulse { from { transform: scale(0.8); } to { transform: scale(1); } }
+    #modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      padding: 24px;
+    }
+    #modal.open { display: flex; }
+    .modal-card {
+      background: #1c1c1e;
+      border-radius: 24px;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .modal-card h2 { font-size: 20px; margin-bottom: 8px; }
+    .modal-card p { font-size: 14px; color: #aaa; margin-bottom: 16px; line-height: 1.4; }
+    .modal-card input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #3a3a3c;
+      background: #2c2c2e;
+      color: #fff;
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+    .save-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: #34c759;
+      color: #000;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    canvas { display: none; }
+  </style>
+</head>
+<body>
 
+  <video id="camera" autoplay playsinline muted></video>
+  <canvas id="canvas"></canvas>
+
+  <div class="top-bar">
+    <button id="autoBtn" class="pill-btn active">⚡ Auto: ON</button>
+    <button id="settingsBtn" class="pill-btn">⚙️</button>
+  </div>
+
+  <div class="ar-overlay">
+    <div id="reticle" class="reticle"></div>
+    <div id="resultBox" style="display:none;">
+      <div id="carbNumber" class="carb-number">0g</div>
+      <div class="carb-unit">CARBOIDRATI</div>
+      <div id="foodLabel" class="food-label">Inquadra un cibo</div>
+    </div>
+  </div>
+
+  <div class="bottom-controls">
+    <div id="portionBar" class="portions" style="display:none;">
+      <button class="portion-btn" data-mult="0.5">½ Porzione</button>
+      <button class="portion-btn selected" data-mult="1">Intero</button>
+      <button class="portion-btn" data-mult="1.5">1.5x</button>
+    </div>
+    <button id="shutterBtn" class="shutter-btn" aria-label="Scatta">
+      <div class="shutter-inner"></div>
+    </button>
+  </div>
+
+  <div id="modal">
+    <div class="modal-card">
+      <h2>Chiave API Gemini</h2>
+      <p>Incolla qui la tua chiave gratuita di Google AI Studio (AIzaSy...). Verrà salvata solo su questo iPhone.</p>
+      <input type="password" id="apiKeyInput" placeholder="AIzaSy..." autocomplete="off" />
+      <button id="saveKeyBtn" class="save-btn">Salva e inizia</button>
+    </div>
+  </div>
+
+  <script>
+    const video = document.getElementById('camera');
+    const canvas = document.getElementById('canvas');
+    const shutterBtn = document.getElementById('shutterBtn');
+    const autoBtn = document.getElementById('autoBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const modal = document.getElementById('modal');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const saveKeyBtn = document.getElementById('saveKeyBtn');
+    const resultBox = document.getElementById('resultBox');
+    const reticle = document.getElementById('reticle');
+    const carbNumber = document.getElementById('carbNumber');
+    const foodLabel = document.getElementById('foodLabel');
+    const portionBar = document.getElementById('portionBar');
+    const portionBtns = document.querySelectorAll('.portion-btn');
+
+    let apiKey = localStorage.getItem('gemini_api_key') || '';
+    let autoMode = true;
+    let baseCarbs = 0;
+    let currentMult = 1;
+    let isAnalyzing = false;
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
+          audio: false
+        });
+        video.srcObject = stream;
+        video.onloadedmetadata = () => {
+          if (!apiKey) {
+            modal.classList.add('open');
+          } else if (autoMode) {
+            setTimeout(analyzeFrame, 1600);
+          }
+        };
+      } catch (err) {
+        alert('Consenti l’accesso alla fotocamera dalle impostazioni di Safari.');
+      }
+    }
+
+    function updateDisplay() {
+      const val = Math.round(baseCarbs * currentMult);
+      carbNumber.textContent = val + 'g';
+      carbNumber.style.transform = 'scale(1.08)';
+      setTimeout(() => carbNumber.style.transform = 'scale(1)', 180);
+    }
+
+    async function analyzeFrame() {
+      if (isAnalyzing) return;
+      if (!apiKey) {
+        modal.classList.add('open');
+        return;
+      }
+      isAnalyzing = true;
+      shutterBtn.classList.add('loading');
+
+      const w = 640;
+      const h = Math.round((video.videoHeight / video.videoWidth) * w) || 480;
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+      const base64Image = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
+
+      const prompt = `Analizza questa immagine di cibo, bevanda, piatto cucinato o etichetta nutrizionale.
+Stima i grammi TOTALI di carboidrati della porzione visibile (o di una porzione standard se è una confezione intera, oppure leggi l'etichetta se in
