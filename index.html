@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="CarboAR" />
   <title>CarboAR</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
     body {
       background: #000;
       color: #fff;
@@ -31,25 +31,25 @@
       top: max(16px, env(safe-area-inset-top));
       left: 16px;
       right: 16px;
-      z-index: 10;
+      z-index: 20;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     .pill-btn {
-      background: rgba(0, 0, 0, 0.55);
+      background: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       color: #fff;
-      padding: 10px 16px;
+      padding: 12px 18px;
       border-radius: 999px;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
     }
     .pill-btn.active {
-      background: rgba(52, 199, 89, 0.85);
+      background: rgba(52, 199, 89, 0.9);
       border-color: #34c759;
     }
     .ar-overlay {
@@ -67,7 +67,7 @@
     .reticle {
       width: 240px;
       height: 240px;
-      border: 2px dashed rgba(255, 255, 255, 0.45);
+      border: 2px dashed rgba(255, 255, 255, 0.5);
       border-radius: 32px;
       position: absolute;
       transition: opacity 0.3s;
@@ -78,7 +78,7 @@
       line-height: 0.95;
       letter-spacing: -3px;
       color: #fff;
-      text-shadow: 0 4px 24px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.9);
+      text-shadow: 0 4px 24px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.95);
       transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2);
     }
     .carb-unit {
@@ -86,11 +86,11 @@
       font-weight: 700;
       letter-spacing: 0.5px;
       margin-top: 6px;
-      text-shadow: 0 2px 14px rgba(0,0,0,0.9);
+      text-shadow: 0 2px 14px rgba(0,0,0,0.95);
     }
     .food-label {
       margin-top: 14px;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       padding: 8px 18px;
@@ -98,14 +98,14 @@
       font-size: 17px;
       font-weight: 600;
       max-width: 85vw;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.25);
     }
     .bottom-controls {
       position: fixed;
-      bottom: max(24px, env(safe-area-inset-bottom));
+      bottom: max(28px, env(safe-area-inset-bottom));
       left: 16px;
       right: 16px;
-      z-index: 10;
+      z-index: 20;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -114,18 +114,18 @@
     .portions {
       display: flex;
       gap: 10px;
-      background: rgba(0, 0, 0, 0.55);
+      background: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       padding: 6px;
       border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.25);
     }
     .portion-btn {
       background: transparent;
       border: none;
-      color: rgba(255, 255, 255, 0.75);
-      padding: 8px 16px;
+      color: rgba(255, 255, 255, 0.8);
+      padding: 10px 16px;
       border-radius: 999px;
       font-size: 15px;
       font-weight: 700;
@@ -136,8 +136,8 @@
       color: #000;
     }
     .shutter-btn {
-      width: 78px;
-      height: 78px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.25);
       border: 4px solid #fff;
@@ -145,12 +145,11 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: transform 0.12s;
     }
     .shutter-btn:active { transform: scale(0.92); }
     .shutter-inner {
-      width: 60px;
-      height: 60px;
+      width: 62px;
+      height: 62px;
       border-radius: 50%;
       background: #fff;
     }
@@ -162,7 +161,7 @@
     #modal {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.88);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       z-index: 50;
@@ -176,7 +175,7 @@
       background: #1c1c1e;
       border-radius: 24px;
       padding: 24px;
-      border: 1px solid rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.2);
     }
     .modal-card h2 { font-size: 20px; margin-bottom: 8px; }
     .modal-card p { font-size: 14px; color: #aaa; margin-bottom: 16px; line-height: 1.4; }
@@ -187,12 +186,12 @@
       border: 1px solid #3a3a3c;
       background: #2c2c2e;
       color: #fff;
-      font-size: 15px;
+      font-size: 16px;
       margin-bottom: 16px;
     }
     .save-btn {
       width: 100%;
-      padding: 14px;
+      padding: 15px;
       border-radius: 12px;
       border: none;
       background: #34c759;
@@ -210,8 +209,8 @@
   <canvas id="canvas"></canvas>
 
   <div class="top-bar">
-    <button id="autoBtn" class="pill-btn active">⚡ Auto: ON</button>
-    <button id="settingsBtn" class="pill-btn">⚙️</button>
+    <button type="button" id="autoBtn" class="pill-btn active">⚡ Auto: ON</button>
+    <button type="button" id="settingsBtn" class="pill-btn">⚙️</button>
   </div>
 
   <div class="ar-overlay">
@@ -225,11 +224,11 @@
 
   <div class="bottom-controls">
     <div id="portionBar" class="portions" style="display:none;">
-      <button class="portion-btn" data-mult="0.5">½ Porzione</button>
-      <button class="portion-btn selected" data-mult="1">Intero</button>
-      <button class="portion-btn" data-mult="1.5">1.5x</button>
+      <button type="button" class="portion-btn" data-mult="0.5">½ Porzione</button>
+      <button type="button" class="portion-btn selected" data-mult="1">Intero</button>
+      <button type="button" class="portion-btn" data-mult="1.5">1.5x</button>
     </div>
-    <button id="shutterBtn" class="shutter-btn" aria-label="Scatta">
+    <button type="button" id="shutterBtn" class="shutter-btn" aria-label="Scatta">
       <div class="shutter-inner"></div>
     </button>
   </div>
@@ -239,7 +238,7 @@
       <h2>Chiave API Gemini</h2>
       <p>Incolla qui la tua chiave gratuita di Google AI Studio (AIzaSy...). Verrà salvata solo su questo iPhone.</p>
       <input type="password" id="apiKeyInput" placeholder="AIzaSy..." autocomplete="off" />
-      <button id="saveKeyBtn" class="save-btn">Salva e inizia</button>
+      <button type="button" id="saveKeyBtn" class="save-btn">Salva e inizia</button>
     </div>
   </div>
 
@@ -280,7 +279,7 @@
           }
         };
       } catch (err) {
-        alert('Consenti l’accesso alla fotocamera dalle impostazioni di Safari.');
+        if (!apiKey) modal.classList.add('open');
       }
     }
 
@@ -288,7 +287,7 @@
       const val = Math.round(baseCarbs * currentMult);
       carbNumber.textContent = val + 'g';
       carbNumber.style.transform = 'scale(1.08)';
-      setTimeout(() => carbNumber.style.transform = 'scale(1)', 180);
+      setTimeout(() => { carbNumber.style.transform = 'scale(1)'; }, 180);
     }
 
     async function analyzeFrame() {
@@ -300,12 +299,4 @@
       isAnalyzing = true;
       shutterBtn.classList.add('loading');
 
-      const w = 640;
-      const h = Math.round((video.videoHeight / video.videoWidth) * w) || 480;
-      canvas.width = w;
-      canvas.height = h;
-      canvas.getContext('2d').drawImage(video, 0, 0, w, h);
-      const base64Image = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
-
-      const prompt = `Analizza questa immagine di cibo, bevanda, piatto cucinato o etichetta nutrizionale.
-Stima i grammi TOTALI di carboidrati della porzione visibile (o di una porzione standard se è una confezione intera, oppure leggi l'etichetta se in
+      
